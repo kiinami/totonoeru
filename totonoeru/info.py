@@ -53,8 +53,9 @@ def info(res: dict) -> dict:
     else:
         info = info[0]
 
-    res['name'] = info.name
+    res['title'] = info.name
     res['year'] = info.first_air_date.split('-')[0]
+    res['language'] = language
     res['episodes'] = [
             res['episodes'][e.episode_number - 1] | {'title': e.name}
             for e in Season().details(info.id, 1).episodes
