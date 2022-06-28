@@ -61,8 +61,14 @@ def check(filenames: list):
         in filenames
     ]), 'The title is not the same for all the files'
 
-    # Return
-    return
+    # Checks all files have the same extension
+    assert all(
+        [
+            r['file_extension'] == filenames[0]['file_extension']
+            for r
+            in filenames
+        ]
+    ), 'The extension is not the same for all the files'
 
 
 def reader(source_dir: str = None, directory: str = None) -> dict:
