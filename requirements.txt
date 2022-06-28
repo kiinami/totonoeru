@@ -3,3 +3,4 @@ anitopy~=2.1.0
 questionary~=1.10.0
 python-dotenv~=0.20.0
 tmdbv3api~=1.7.6
+alive_progress==2.4.1
