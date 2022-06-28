@@ -15,22 +15,35 @@ def select_directory(source_dir: str):
     """
     Lets the user select the directory.
     """
-    # Get the directory
-    directory = questionary.select(
-        'Please select the directory',
-        [
-            questionary.Choice(
-                d,
-                os.path.join(source_dir, d),
-                disabled='Not valid' if not all(
-                    [f.endswith('.mkv') for f in os.listdir(os.path.join(source_dir, d))]) else None,
-                shortcut_key=str(i)
-            )
-            for i, d in enumerate(os.listdir(source_dir))
-            if os.path.isdir(os.path.join(source_dir, d))
-        ],
-        use_shortcuts=True
-    ).ask()
+    # Gets all the directories
+    dirs = [
+        (i, d)
+        for i, d
+        in enumerate(os.listdir(source_dir))
+        if os.path.isdir(os.path.join(source_dir, d))
+        and all([f.endswith('.mkv') for f in os.listdir(os.path.join(source_dir, d))])
+    ]
+
+    # If there are more than one directory, ask the user to select one
+    if len(dirs) > 1:
+        directory = questionary.select(
+            'Please select the directory',
+            [
+                questionary.Choice(
+                    d,
+                    os.path.join(source_dir, d),
+                    disabled='Not valid' if not all(
+                        [f.endswith('.mkv') for f in os.listdir(os.path.join(source_dir, d))]) else None,
+                    shortcut_key=str(i)
+                )
+                for i, d in dirs
+            ],
+            use_shortcuts=True
+        ).ask()
+    # If there is only one directory, use it
+    else:
+        directory = os.path.join(source_dir, dirs[0][1])
+        print(f'Using {directory}')
 
     # Return the directory
     return directory
@@ -92,8 +105,8 @@ def reader(source_dir: str = None, directory: str = None) -> dict:
         'extension': res[0]['file_extension'],
         'episodes': [
             {
-                'path': os.path.join(directory, r),
-                'episode': r['episode']
+                'path': os.path.join(directory, r['file_name']),
+                'episode': r['episode_number']
             }
             for r in res
         ]
