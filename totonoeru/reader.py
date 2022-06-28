@@ -105,8 +105,8 @@ def reader(source_dir: str = None, directory: str = None) -> dict:
         'extension': res[0]['file_extension'],
         'episodes': [
             {
-                'path': os.path.join(directory, r['file_name']),
-                'episode': r['episode_number']
+                'path': r['file_name'],
+                'episode': int(r['episode_number'])
             }
             for r in res
         ]
