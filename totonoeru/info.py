@@ -37,7 +37,7 @@ def info(res: dict) -> dict:
     info = TV().search(res['title'])
 
     # Gets the show ID
-    if len(res) > 1:
+    if len(info) > 1:
         info = questionary.select(
             'Please select the correct title',
             [
