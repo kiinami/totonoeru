@@ -10,10 +10,10 @@ import shutil
 
 from alive_progress import alive_it
 
-from subtitles import mux_subs
+from subtitles import mux_subs, retime_subs
 
 
-def move(res: dict, destination: str, mux: bool):
+def move(res: dict, destination: str, mux: bool, retime: bool):
     """
     Moves the files
     """
@@ -24,8 +24,8 @@ def move(res: dict, destination: str, mux: bool):
     if not os.path.exists(destination):
         os.makedirs(destination)
 
-    # Moves the files
     for e in alive_it(res['episodes']):
+        # Copies the file
         dest = shutil.copy2(
             os.path.join(res['directory'], e['path']),
             os.path.join(
@@ -36,10 +36,17 @@ def move(res: dict, destination: str, mux: bool):
         )
 
         if e.get('subtitles'):
+            # Retimes the subtitles
+            if retime:
+                retime_subs(dest, os.path.join(res['subtitle_dir'], e['subtitles']))
+
+            # If mux is True, muxes the subtitles
             if mux:
                 mux_subs(dest, os.path.join(res['subtitle_dir'], e['subtitles']), res['language'])
+                # Continues to the next episode
                 continue
             else:
+                # Else, copies the subtitles
                 shutil.copy2(
                     os.path.join(res['subtitle_dir'], e['subtitles']),
                     os.path.join(
@@ -48,5 +55,8 @@ def move(res: dict, destination: str, mux: bool):
                         f'.{res["language"]}.srt'
                     )
                 )
+
+        # Removes the old file
         os.remove(os.path.join(res['directory'], e['path']))
+        # Symlinks the new file
         os.symlink(dest, os.path.join(res['directory'], e['path']))

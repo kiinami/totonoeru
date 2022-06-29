@@ -52,27 +52,35 @@ from subtitles import add_subs
     help='The language of the subtitles'
 )
 @click.option(
+    '-r',
+    '--retime-subs',
+    'retime',
+    is_flag=True,
+    help='Retime the subtitles automagically'
+)
+@click.option(
     '-m',
     '--mux-subs',
     'mux',
-    help='Mux the subtitles into the files',
-    default=None
+    is_flag=True,
+    help='Mux the subtitles into the files'
 )
 def totonoeru(
-        media_dir: str,
+        source_dir: str,
         destination_dir: str,
         sub_dir: str,
         language: str,
+        retime: bool,
         mux: bool
 ):
     """
     Small script to put my media files in my media server.
     """
-    res = reader(media_dir)
+    res = reader(source_dir)
     res = info(res, language)
     if sub_dir:
         res = add_subs(res, sub_dir)
-    move(res, destination_dir, mux)
+    move(res, destination_dir, mux, retime)
 
 
 if __name__ == '__main__':

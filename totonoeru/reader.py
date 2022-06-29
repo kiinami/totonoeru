@@ -42,14 +42,12 @@ def check(filenames: list):
         in filenames
     ]), 'The season is not the same for all the files'
 
-    # Checks all files have the same extension
-    assert all(
-        [
-            r['file_extension'] == filenames[0]['file_extension']
-            for r
-            in filenames
-        ]
-    ), 'The extension is not the same for all the files'
+    # Checks all files are MKV
+    assert all([
+        r['file_extension'] == 'mkv'
+        for r
+        in filenames
+    ]), 'All files must be MKV'
 
 
 def reader(directory: str = None) -> dict:
