@@ -13,25 +13,6 @@ def info(res: dict, language: str = None) -> dict:
     """
     Gets the info from The Movie Database.
     """
-    # Asks the user which language they want to get the metadata in
-    if not language:
-        language = questionary.select(
-            'Please select the language',
-            [
-                questionary.Choice(
-                    'English',
-                    'en',
-                    shortcut_key='1'
-                ),
-                questionary.Choice(
-                    'Japanese',
-                    'ja',
-                    shortcut_key='2'
-                )
-            ],
-            use_shortcuts=True
-        ).ask()
-
     # Queries the title
     tmdb = TMDb()
     tmdb.language = language

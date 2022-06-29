@@ -13,24 +13,15 @@ from anitopy import anitopy
 from iso639 import languages
 
 
-def add_subs(res: dict, subs_dir: str, mux: bool):
+def add_subs(res: dict, subs_dir: str):
     """
     Adds the subtitles
     """
-    if subs_dir or questionary.confirm('Do you want to add subtitles?').ask():
-        if not subs_dir:
-            subs_dir = questionary.path(
-                'Where are the subtitles?',
-                only_directories=True
-            ).ask()
-    else:
-        return res, False
-
     # Reads the subtitle files
     subs = [anitopy.parse(f) for f in os.listdir(subs_dir)]
 
     # Checks all subtitles are in SRT format
-    assert all(s['file_extension'] == 'srt' for s in subs)
+    assert all(s['file_extension'] == 'srt' for s in subs), 'Some subtitles are not in SRT format'
 
     # Adds the subtitles and details
     res['subtitle_dir'] = subs_dir
@@ -41,17 +32,16 @@ def add_subs(res: dict, subs_dir: str, mux: bool):
     if any([not e.get('subtitles') for e in res['episodes']]):
         print(f'Episodes {", ".join([str(e["episode"]) for e in res["episodes"] if not e.get("subtitles")])} '
               f'have no subtitles')
-        if not questionary.confirm('Do you still want to add them?').ask():
+        if not questionary.confirm(
+                f'Episodes {", ".join([str(e["episode"]) for e in res["episodes"] if not e.get("subtitles")])} '
+                f'have no subtitles.\nDo you still want to add them?'
+        ).ask():
             # Removes the subtitles from the episodes
             for e in res['episodes']:
                 e.pop('subtitles', None)
-            e.pop('subtitle_dir', None)
-            return res, False
+            res.pop('subtitle_dir', None)
 
-    if mux is None:
-        mux = questionary.confirm('Do you want to mux the subtitles?').ask()
-
-    return res, mux
+    return res
 
 
 def mux_subs(video_file: str, subtitle_file: str, language: str):

@@ -7,46 +7,7 @@ Created by kinami on 2022-06-28
 """
 import os
 
-import questionary
 from anitopy import anitopy
-
-
-def select_directory(source_dir: str):
-    """
-    Lets the user select the directory.
-    """
-    # Gets all the directories
-    dirs = [
-        d
-        for d
-        in os.listdir(source_dir)
-        if os.path.isdir(os.path.join(source_dir, d))
-        and all([f.endswith('.mkv') for f in os.listdir(os.path.join(source_dir, d))])
-    ]
-
-    # If there are more than one directory, ask the user to select one
-    if len(dirs) > 1:
-        directory = questionary.select(
-            'Please select the directory',
-            [
-                questionary.Choice(
-                    d,
-                    os.path.join(source_dir, d),
-                    disabled='Not valid' if not all(
-                        [f.endswith('.mkv') for f in os.listdir(os.path.join(source_dir, d))]) else None,
-                    shortcut_key=str(i)
-                )
-                for i, d in enumerate(dirs)
-            ],
-            use_shortcuts=True
-        ).ask()
-    # If there is only one directory, use it
-    else:
-        directory = os.path.join(source_dir, dirs[0][1])
-        print(f'Using {directory}')
-
-    # Return the directory
-    return directory
 
 
 def parse_filenames(directory: str):
@@ -91,14 +52,10 @@ def check(filenames: list):
     ), 'The extension is not the same for all the files'
 
 
-def reader(source_dir: str = None, directory: str = None) -> dict:
+def reader(directory: str = None) -> dict:
     """
     Gets the directory and reads it.
     """
-    # Get the directory
-    if directory is None:
-        directory = select_directory(source_dir)
-
     # Parses the filenames
     res = parse_filenames(directory)
 
