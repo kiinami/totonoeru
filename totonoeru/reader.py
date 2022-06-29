@@ -17,9 +17,9 @@ def select_directory(source_dir: str):
     """
     # Gets all the directories
     dirs = [
-        (i, d)
-        for i, d
-        in enumerate(os.listdir(source_dir))
+        d
+        for d
+        in os.listdir(source_dir)
         if os.path.isdir(os.path.join(source_dir, d))
         and all([f.endswith('.mkv') for f in os.listdir(os.path.join(source_dir, d))])
     ]
@@ -36,7 +36,7 @@ def select_directory(source_dir: str):
                         [f.endswith('.mkv') for f in os.listdir(os.path.join(source_dir, d))]) else None,
                     shortcut_key=str(i)
                 )
-                for i, d in dirs
+                for i, d in enumerate(dirs)
             ],
             use_shortcuts=True
         ).ask()
@@ -74,6 +74,13 @@ def check(filenames: list):
         in filenames
     ]), 'The title is not the same for all the files'
 
+    # Checks the season is the same for all the files
+    assert all([
+        r['anime_season'] == filenames[0]['anime_season']
+        for r
+        in filenames
+    ]), 'The season is not the same for all the files'
+
     # Checks all files have the same extension
     assert all(
         [
@@ -103,11 +110,12 @@ def reader(source_dir: str = None, directory: str = None) -> dict:
         'directory': directory,
         'title': res[0]['anime_title'],
         'extension': res[0]['file_extension'],
-        'episodes': [
+        'season': int(res[0]['anime_season']),
+        'episodes': sorted([
             {
                 'path': r['file_name'],
                 'episode': int(r['episode_number'])
             }
             for r in res
-        ]
+        ], key=lambda x: x['episode'])
     }

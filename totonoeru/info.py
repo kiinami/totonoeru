@@ -9,27 +9,28 @@ import questionary
 from tmdbv3api import TV, Season, TMDb
 
 
-def info(res: dict) -> dict:
+def info(res: dict, language: str = None) -> dict:
     """
     Gets the info from The Movie Database.
     """
     # Asks the user which language they want to get the metadata in
-    language = questionary.select(
-        'Please select the language',
-        [
-            questionary.Choice(
-                'English',
-                'en',
-                shortcut_key='1'
-            ),
-            questionary.Choice(
-                'Japanese',
-                'ja',
-                shortcut_key='2'
-            )
-        ],
-        use_shortcuts=True
-    ).ask()
+    if not language:
+        language = questionary.select(
+            'Please select the language',
+            [
+                questionary.Choice(
+                    'English',
+                    'en',
+                    shortcut_key='1'
+                ),
+                questionary.Choice(
+                    'Japanese',
+                    'ja',
+                    shortcut_key='2'
+                )
+            ],
+            use_shortcuts=True
+        ).ask()
 
     # Queries the title
     tmdb = TMDb()
@@ -57,9 +58,10 @@ def info(res: dict) -> dict:
     res['year'] = info.first_air_date.split('-')[0]
     res['language'] = language
     res['episodes'] = [
-            res['episodes'][e.episode_number - 1] | {'title': e.name}
-            for e in Season().details(info.id, 1).episodes
-        ]
+        res['episodes'][e.episode_number - 1] | {'title': e.name}
+        for i, e in enumerate(Season().details(info.id, res['season']).episodes)
+        if i < len(res['episodes'])
+    ]
 
     # Return the info
     return res

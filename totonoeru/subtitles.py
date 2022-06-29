@@ -13,30 +13,45 @@ from anitopy import anitopy
 from iso639 import languages
 
 
-def add_subs(res: dict, subs_dir: str):
+def add_subs(res: dict, subs_dir: str, mux: bool):
     """
     Adds the subtitles
     """
+    if subs_dir or questionary.confirm('Do you want to add subtitles?').ask():
+        if not subs_dir:
+            subs_dir = questionary.path(
+                'Where are the subtitles?',
+                only_directories=True
+            ).ask()
+    else:
+        return res, False
+
     # Reads the subtitle files
     subs = [anitopy.parse(f) for f in os.listdir(subs_dir)]
 
-    # Checks there are the same amount of files and subtitles
-    assert len(res['episodes']) == len(subs), 'The amount of files and subtitles are not the same'
+    # Checks all subtitles are in SRT format
+    assert all(s['file_extension'] == 'srt' for s in subs)
 
     # Adds the subtitles and details
     res['subtitle_dir'] = subs_dir
-    res['mux_subs'] = all(
-        [
-            anitopy.parse(e['path'])['file_extension'] == 'mkv'
-            for e
-            in res['episodes']
-        ]
-    ) and questionary.confirm('Do you want to mux the subtitles into the files?').ask()
-    subs.sort(key=lambda x: x['episode_number'])
-    for e in res['episodes']:
-        e['subtitles'] = subs[e['episode'] - 1]['file_name']
+    subs.sort(key=lambda x: int(x['episode_number']))
+    for s in subs:
+        res['episodes'][int(s['episode_number']) - 1]['subtitles'] = s['file_name']
 
-    return res
+    if any([not e.get('subtitles') for e in res['episodes']]):
+        print(f'Episodes {", ".join([str(e["episode"]) for e in res["episodes"] if not e.get("subtitles")])} '
+              f'have no subtitles')
+        if not questionary.confirm('Do you still want to add them?').ask():
+            # Removes the subtitles from the episodes
+            for e in res['episodes']:
+                e.pop('subtitles', None)
+            e.pop('subtitle_dir', None)
+            return res, False
+
+    if mux is None:
+        mux = questionary.confirm('Do you want to mux the subtitles?').ask()
+
+    return res, mux
 
 
 def mux_subs(video_file: str, subtitle_file: str, language: str):

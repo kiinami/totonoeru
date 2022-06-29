@@ -14,7 +14,7 @@ from alive_progress import alive_it
 from subtitles import mux_subs
 
 
-def move(res: dict, library_dir: str):
+def move(res: dict, library_dir: str, mux: bool):
     """
     Moves the files
     """
@@ -32,7 +32,7 @@ def move(res: dict, library_dir: str):
     ).ask()
 
     # Adds the new folder name to the destination directory
-    destination = os.path.join(destination, f'{res["name"]} ({res["year"]})')
+    destination = os.path.join(destination, f'{res["title"]} ({res["year"]})')
 
     # Creates the destination directory
     if not os.path.exists(destination):
@@ -44,20 +44,23 @@ def move(res: dict, library_dir: str):
             os.path.join(res['directory'], e['path']),
             os.path.join(
                 destination,
-                f'{res["name"]} ({res["year"]}) - S{res["season"]:02}E{e["episode"]:02} - {e["title"]}.{res["ext"]}'
+                f'{res["title"]} ({res["year"]}) - S{res["season"]:02}E{e["episode"]:02} - {e["title"]}'
+                f'.{res["extension"]}'
             )
         )
 
-        if res['mux_subs']:
-            mux_subs(dest, os.path.join(res['subtitle_dir'], e['subtitle']), res['language'])
-            continue
-        elif res['subtitle_dir']:
-            shutil.copy2(
-                os.path.join(res['subtitle_dir'], e['subtitle']),
-                os.path.join(
-                    destination,
-                    f'{res["name"]} ({res["year"]}) - S{res["season"]:02}E{e["episode"]:02} - {e["title"]}.ja.srt'
+        if e.get('subtitles'):
+            if mux:
+                mux_subs(dest, os.path.join(res['subtitle_dir'], e['subtitles']), res['language'])
+                continue
+            else:
+                shutil.copy2(
+                    os.path.join(res['subtitle_dir'], e['subtitles']),
+                    os.path.join(
+                        destination,
+                        f'{res["title"]} ({res["year"]}) - S{res["season"]:02}E{e["episode"]:02} - {e["title"]}'
+                        f'.{res["language"]}.srt'
+                    )
                 )
-            )
         os.remove(os.path.join(res['directory'], e['path']))
         os.symlink(dest, os.path.join(res['directory'], e['path']))

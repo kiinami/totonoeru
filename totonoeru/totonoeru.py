@@ -20,14 +20,68 @@ from subtitles import add_subs
 
 
 @click.command()
-def totonoeru(source_dir: str, library_dir: str, sub_dir: str = None):
+@click.option(
+    '-s',
+    '--source-dir',
+    'source_dir',
+    envvar='SOURCE_DIR',
+    type=click.Path(exists=True, file_okay=False),
+    required=True,
+    help='The parent directory to read the files from'
+)
+@click.option(
+    '-l',
+    '--library-dir',
+    'library_dir',
+    envvar='LIBRARY_DIR',
+    type=click.Path(exists=True, file_okay=False),
+    required=True,
+    help='The library to move the files to'
+)
+@click.option(
+    '-d',
+    '--media-dir',
+    'media_dir',
+    type=click.Path(exists=True, file_okay=False),
+    help='The directory where the media files are'
+)
+@click.option(
+    '-t',
+    '--sub-dir',
+    'sub_dir',
+    type=click.Path(exists=True, file_okay=False),
+    help='The directory where the subtitles are'
+)
+@click.option(
+    '-l',
+    '--language',
+    'language',
+    type=click.Choice(['en', 'ja']),
+    help='The language of the subtitles'
+)
+@click.option(
+    '-m/-c',
+    '--mux-subs/--copy-subs',
+    'mux',
+    help='Mux the subtitles into the files',
+    default=None
+)
+def totonoeru(
+        source_dir: str,
+        library_dir: str,
+        media_dir: str = None,
+        sub_dir: str = None,
+        language: str = None,
+        mux: bool = None,
+
+):
     """
     Small script to put my media files in my media server.
     """
-    res = reader(source_dir)
-    res = info(res)
-    res = add_subs(res, sub_dir)
-    move(res, library_dir)
+    res = reader(source_dir, media_dir)
+    res = info(res, language)
+    res, mux = add_subs(res, sub_dir, mux)
+    move(res, library_dir, mux)
 
 
 if __name__ == '__main__':
